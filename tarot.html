@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <title></title>
+    <base target="_top" />
+    <script defer src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Kanit", sans-serif;
+      }
+      .card-deck {
+        width: 60px;
+        height: 90px;
+        background: linear-gradient(135deg, #fbcfe8, #ddd6fe);
+        border: 2px solid white;
+        border-radius: 8px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+      }
+      .card-item {
+        width: 50px;
+        height: 75px;
+        background: linear-gradient(135deg, #fbcfe8, #ddd6fe);
+        cursor: pointer;
+        transition: transform 0.3s;
+        border: 2px solid white;
+        border-radius: 8px;
+        margin-left: -35px; /* เลื่อมซ้าย */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+      }
+      .card-item:hover {
+        transform: translateY(-20px) scale(1.1);
+        z-index: 20;
+      }
+      .slot {
+        width: 90px;
+        height: 130px;
+        border: 2px dashed #fbcfe8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: white;
+      }
+      @keyframes shake {
+        0%,
+        100% {
+          transform: rotate(0deg);
+        }
+        25% {
+          transform: rotate(-10deg);
+        }
+        75% {
+          transform: rotate(10deg);
+        }
+      }
+      .shuffling {
+        animation: shake 0.2s infinite;
+      }
+    </style>
+  </head>
+  <body class="bg-pink-50 min-h-screen p-4">
+    <div class="max-w-3xl mx-auto bg-white rounded-3xl shadow-xl p-6">
+      <h1 class="text-3xl font-bold text-pink-400 text-center mb-2">
+        ✨ ทำนายดวงวันนี้หน่อยสิ! ✨
+      </h1>
+
+      <!-- Instructional Box -->
+      <div
+        class="bg-blue-50 border border-blue-100 p-4 rounded-xl text-blue-800 text-sm mb-6 leading-relaxed shadow-sm"
+      >
+        <p class="font-semibold mb-1 text-blue-900">🔮 คำแนะนำก่อนทำนาย:</p>
+        การดูไพ่ยิปซี เป็นการเปิดไพ่เพื่อสะท้อนพลังงานและแนวโน้ม หัวใจสำคัญคือ
+        สมาธิ และ สติ
+        <strong>ควรสับไพ่และเลือกไพ่ด้วยมือซ้าย</strong> ตั้งจิตให้มั่น
+        ถามคำถามที่เฉพาะเจาะจง และอ่านไพ่แบบเชื่อมโยงเหตุผลกับสถานการณ์ปัจจุบัน
+      </div>
+
+      <p class="text-center text-pink-300 mb-6" id="status-text">
+        กดที่กองไพ่เพื่อเริ่มสับไพ่และเลือกดวงของคุณ
+      </p>
+
+      <!-- Area 1: Spread Slots -->
+      <div class="flex justify-center gap-4 mb-8" id="spread-area">
+        <div class="text-center">
+          <div id="slot-0" class="slot rounded-xl mb-2 text-pink-200">1</div>
+          <p class="text-xs text-pink-400">สถานการณ์</p>
+        </div>
+        <div class="text-center">
+          <div id="slot-1" class="slot rounded-xl mb-2 text-pink-200">2</div>
+          <p class="text-xs text-pink-400">อุปสรรค</p>
+        </div>
+        <div class="text-center">
+          <div id="slot-2" class="slot rounded-xl mb-2 text-pink-200">3</div>
+          <p class="text-xs text-pink-400">คำแนะนำ</p>
+        </div>
+        <div class="text-center">
+          <div id="slot-3" class="slot rounded-xl mb-2 text-pink-200">4</div>
+          <p class="text-xs text-pink-400">สรุป</p>
+        </div>
+      </div>
+
+      <!-- Area 2: Deck Container -->
+      <div id="deck-container" class="flex justify-center items-center h-40">
+        <button
+          id="main-deck"
+          class="card-deck"
+          onclick="startShuffling()"
+          onkeypress="startShuffling()"
+        />
+      </div>
+
+      <!-- Button Action Container -->
+      <div id="action-area" class="flex justify-center mt-6"></div>
+
+      <!-- Results Modal -->
+      <div id="result-area" class="hidden mt-8"></div>
+    </div>
+
+    <script defer>
+      const tarotData = [
+        { "CardName": "The Fool", "Meaning": "เริ่มต้นการเดินทางครั้งใหม่ด้วยจิตใจที่ไร้เดียงสาและเปี่ยมไปด้วยความหวัง เป็นช่วงเวลาแห่งการเสี่ยงดวง การเริ่มต้นโปรเจกต์ใหม่ หรือการก้าวออกจากกรอบเดิมๆ เพื่อค้นหาประสบการณ์ชีวิตที่ท้าทาย โดยไม่ต้องกังวลถึงอดีตที่ผ่านพ้นมา", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/90/RWS_Tarot_00_Fool.jpg" },
+        { "CardName": "The Magician", "Meaning": "พลังแห่งการเนรมิตและความคิดสร้างสรรค์ คุณมีเครื่องมือและทักษะครบถ้วนที่จะเปลี่ยนความคิดให้กลายเป็นความจริง เป็นช่วงเวลาที่พลังอำนาจอยู่ในมือคุณ เพียงแค่ต้องมีสมาธิและการวางแผนที่แน่วแน่ในการลงมือทำ", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/de/RWS_Tarot_01_Magician.jpg" },
+        { "CardName": "The High Priestess", "Meaning": "เข้าสู่โลกแห่งจิตใต้สำนึกและสัญชาตญาณ มีความลับหรือความรู้ที่ซ่อนเร้นกำลังรอให้คุณค้นพบ เป็นช่วงเวลาที่ควรหยุดพักเพื่อรับฟังเสียงจากภายใน และยอมรับความไม่แน่นอนโดยใช้สัญชาตญาณในการนำทาง", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/88/RWS_Tarot_02_High_Priestess.jpg" },
+        { "CardName": "The Empress", "Meaning": "สัญลักษณ์แห่งความอุดมสมบูรณ์ การเติบโต และความรักที่เอื้ออาทร เป็นช่วงเวลาที่เปี่ยมไปด้วยความคิดสร้างสรรค์ การดูแลเอาใจใส่ผู้อื่น หรือความสำเร็จในเรื่องงานและชีวิตส่วนตัวที่กำลังผลิดอกออกผลอย่างสวยงาม", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d2/RWS_Tarot_03_Empress.jpg" },
+        { "CardName": "The Emperor", "Meaning": "โครงสร้าง ความมั่นคง และอำนาจในการจัดการ คุณกำลังอยู่ในสถานะที่สามารถสร้างระบบระเบียบให้กับชีวิตได้ ต้องอาศัยการตัดสินใจที่เด็ดขาดและใช้ตรรกะเหตุผลในการควบคุมสถานการณ์เพื่อความยั่งยืน", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c3/RWS_Tarot_04_Emperor.jpg" },
+        { "CardName": "The Hierophant", "Meaning": "การยึดมั่นในประเพณี ความเชื่อ หรือระบบการเรียนรู้ที่เป็นสากล เป็นช่วงเวลาของการแสวงหาคำปรึกษาจากผู้รู้ หรือการปฏิบัติตามขั้นตอนที่ถูกต้องเพื่อความก้าวหน้าและการเติบโตทางจิตวิญญาณ", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/8d/RWS_Tarot_05_Hierophant.jpg" },
+        { "CardName": "The Lovers", "Meaning": "การตัดสินใจที่เกี่ยวกับความสัมพันธ์หรือทางเลือกที่สำคัญในชีวิต หมายถึงความสมดุลและความสามัคคีที่เกิดขึ้นจากการเลือกสิ่งที่ตรงกับค่านิยมภายในใจจริงๆ เป็นบททดสอบเรื่องความซื่อสัตย์ต่อตนเองและผู้อื่น", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/RWS_Tarot_06_Lovers.jpg/960px-RWS_Tarot_06_Lovers.jpg" },
+        { "CardName": "The Chariot", "Meaning": "ชัยชนะผ่านความมุ่งมั่นและการควบคุมตนเอง คุณมีเป้าหมายที่ชัดเจนและกำลังมุ่งหน้าไปสู่ความสำเร็จ แม้จะมีอุปสรรคเข้ามาทดสอบ แต่ด้วยความเด็ดขาดคุณจะก้าวข้ามผ่านมันไปได้ด้วยดี", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9b/RWS_Tarot_07_Chariot.jpg" },
+        { "CardName": "Strength", "Meaning": "ความแข็งแกร่งที่มาจากใจไม่ใช่แรงกาย เป็นพลังแห่งความเมตตา การควบคุมสัญชาตญาณดิบ และการเอาชนะความกลัวด้วยความอดทนและความอ่อนโยนที่เหนือชั้นกว่าความก้าวร้าว", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f5/RWS_Tarot_08_Strength.jpg" },
+        { "CardName": "The Hermit", "Meaning": "การปลีกตัวเพื่อสำรวจจิตวิญญาณและความจริงของชีวิต เป็นช่วงเวลาที่เหมาะสมกับการไตร่ตรองทบทวนสิ่งที่ผ่านเข้ามา และค้นหาคำตอบภายในใจด้วยความสันโดษก่อนจะก้าวต่อไปอย่างมั่นคง", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/4/4d/RWS_Tarot_09_Hermit.jpg" },
+        { "CardName": "Wheel of Fortune", "Meaning": "โชคชะตาและการเปลี่ยนแปลงที่หลีกเลี่ยงไม่ได้ ชีวิตมีขึ้นมีลงเป็นวัฏจักร เมื่อได้ไพ่ใบนี้ให้รู้ว่าสถานการณ์กำลังหมุนเวียนไปสู่จุดใหม่ ควรยอมรับความเปลี่ยนแปลงและเตรียมพร้อมรับโอกาสใหม่ที่เข้ามา", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3c/RWS_Tarot_10_Wheel_of_Fortune.jpg" },
+        { "CardName": "Justice", "Meaning": "ความยุติธรรมและความสมดุล ผลลัพธ์ของการกระทำในอดีตกำลังส่งผล หากคุณมีความซื่อสัตย์และยุติธรรม ความสำเร็จจะตามมา เป็นช่วงเวลาแห่งการตัดสินใจอย่างเที่ยงตรงด้วยเหตุผล", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e0/RWS_Tarot_11_Justice.jpg" },
+        { "CardName": "The Hanged Man", "Meaning": "การมองโลกในมุมมองใหม่โดยการยอมปล่อยวางสิ่งที่ยึดติด เป็นช่วงเวลาที่ดูเหมือนหยุดนิ่ง แต่จริงๆ แล้วคือการพักเพื่อคิดทบทวนและเสียสละความพึงพอใจชั่วคราวเพื่อสิ่งที่ลึกซึ้งยิ่งกว่า", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/2/2b/RWS_Tarot_12_Hanged_Man.jpg" },
+        { "CardName": "Death", "Meaning": "การจบสิ้นของบทบาทเก่าเพื่อเปิดรับการเกิดใหม่ เป็นการเปลี่ยนผ่านที่จำเป็น แม้จะฟังดูน่ากลัวแต่เป็นการทิ้งสิ่งที่ไม่จำเป็นออกไป เพื่อให้ชีวิตก้าวไปสู่ระดับที่ดีขึ้นอย่างราบรื่น", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d7/RWS_Tarot_13_Death.jpg" },
+        { "CardName": "Temperance", "Meaning": "การผสมผสานความแตกต่างอย่างสมดุลและการเยียวยา เป็นช่วงเวลาแห่งความพอดี การปรับตัวให้เข้ากับสถานการณ์และผู้อื่นอย่างใจเย็น เพื่อสร้างผลลัพธ์ที่ดีและยั่งยืนกว่าเดิม", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/RWS_Tarot_14_Temperance.jpg/500px-RWS_Tarot_14_Temperance.jpg" },
+        { "CardName": "The Devil", "Meaning": "การหลุดพ้นจากพันธนาการที่สร้างขึ้นเอง ความหลงใหล หรือนิสัยที่ขัดขวางความก้าวหน้า เป็นการเตือนให้คุณตระหนักถึงสิ่งที่กำลังยึดติดและก้าวข้ามความมืดมนเหล่านั้นเพื่อคืนสู่อิสรภาพ", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/5/55/RWS_Tarot_15_Devil.jpg" },
+        { "CardName": "The Tower", "Meaning": "ความโกลาหลที่เข้ามาทำลายสิ่งปลอมเปลือกเพื่อสร้างความจริงใหม่ เป็นการเปลี่ยนแปลงอย่างฉับพลันที่แม้จะฟังดูรุนแรง แต่จะช่วยให้โครงสร้างที่อ่อนแอถูกแทนที่ด้วยสิ่งที่แข็งแกร่งกว่า", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/RWS_Tarot_16_Tower.jpg/500px-RWS_Tarot_16_Tower.jpg" },
+        { "CardName": "The Star", "Meaning": "ความหวังใหม่ที่สว่างไสวหลังพายุผ่านพ้นไป เป็นพลังแห่งจิตวิญญาณและแรงบันดาลใจที่ทำให้คุณเชื่อมั่นในอนาคต เป็นเวลาแห่งการฟื้นฟูและการได้รับความช่วยเหลือที่งดงาม", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/db/RWS_Tarot_17_Star.jpg" },
+        { "CardName": "The Moon", "Meaning": "ความไม่ชัดเจนและภาพลวงตาที่เกิดจากความกังวลภายในใจ เป็นช่วงเวลาที่สัญชาตญาณอาจถูกบดบังด้วยความกลัว ให้ใช้ความระมัดระวังและมองหาความจริงที่ซ่อนอยู่ภายใต้ความลึกลับนั้น", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7f/RWS_Tarot_18_Moon.jpg" },
+        { "CardName": "The Sun", "Meaning": "ความสำเร็จ ความสุข และความกระจ่างแจ้งทุกประการ พลังแห่งแสงสว่างที่ช่วยให้ทุกอย่างราบรื่นและเปี่ยมด้วยความคิดบวก คุณกำลังอยู่ในจุดที่เปล่งประกายและได้รับการยอมรับอย่างงดงาม", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/1/17/RWS_Tarot_19_Sun.jpg" },
+        { "CardName": "Judgement", "Meaning": "การตัดสินใจครั้งใหญ่และการตื่นรู้ทางจิตวิญญาณ การประเมินผลอดีตเพื่อก้าวสู่บทบาทใหม่ที่เหมาะสมกว่าเดิม เป็นเวลาที่เสียงจากภายในจะบอกให้คุณทำในสิ่งที่ถูกต้องที่สุด", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/dd/RWS_Tarot_20_Judgement.jpg" },
+        { "CardName": "The World", "Meaning": "ความสำเร็จที่สมบูรณ์แบบและการจบสิ้นที่เปี่ยมความหมาย คุณทำตามเป้าหมายได้สำเร็จและเข้าสู่สถานะของการเป็นหนึ่งเดียวกับเป้าหมายนั้น เป็นเวลาแห่งการฉลองความสำเร็จและการเริ่มต้นบทใหม่ของชีวิต", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/f/ff/RWS_Tarot_21_World.jpg" },
+        { "CardName": "Ace of Wands", "Meaning": "แรงบันดาลใจครั้งใหม่ที่เปี่ยมไปด้วยพลังและการเริ่มต้นโครงการสร้างสรรค์ คุณกำลังได้รับโอกาสในการลงมือทำสิ่งที่รักและสร้างความเปลี่ยนแปลงให้เกิดขึ้นจริงอย่างมั่นใจ", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/1/11/Wands01.jpg" },
+        { "CardName": "Two of Wands", "Meaning": "การวางแผนเพื่ออนาคตและการตัดสินใจครั้งสำคัญ คุณกำลังมองหาหนทางขยายขอบเขตชีวิตออกไปสู่ความเป็นไปได้ใหม่ๆ โดยใช้ความมุ่งมั่นเป็นเข็มทิศนำทาง", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/0f/Wands02.jpg" },
+        { "CardName": "Three of Wands", "Meaning": "การเฝ้ารอผลลัพธ์จากการลงมือทำและความสำเร็จก้าวแรก เป็นช่วงเวลาแห่งการขยายตัวและการมองเห็นเป้าหมายที่อยู่ไกลออกไป คุณมาถูกทางแล้ว", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/f/ff/Wands03.jpg" },
+        { "CardName": "Four of Wands", "Meaning": "การเฉลิมฉลองความสำเร็จและความมั่นคงในชีวิต มีบรรยากาศของการอยู่ร่วมกันอย่างมีความสุขและปลอดภัย เป็นช่วงเวลาที่ดีในการสร้างบ้านหรือสร้างสายสัมพันธ์ที่แน่นแฟ้น", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a4/Wands04.jpg" },
+        { "CardName": "Five of Wands", "Meaning": "ความวุ่นวายและการแข่งขันที่เข้ามาทดสอบจิตใจ คุณต้องเผชิญหน้ากับความเห็นที่แตกต่างและความขัดแย้ง แต่ถือเป็นโอกาสในการพัฒนาทักษะการเจรจาและการปรับตัวให้เข้ากับผู้อื่น", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9d/Wands05.jpg" },
+        { "CardName": "Six of Wands", "Meaning": "ชัยชนะและการได้รับการยอมรับจากผู้คนรอบข้าง คุณมีความมั่นใจเต็มเปี่ยมและผลงานที่ผ่านมาจะส่งผลให้คุณได้รับคำชมและความสำเร็จอย่างที่ตั้งใจ", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3b/Wands06.jpg" },
+        { "CardName": "Seven of Wands", "Meaning": "ความพยายามในการปกป้องจุดยืนและคุณค่าของตนเองในท่ามกลางความท้าทาย คุณกำลังแสดงให้เห็นถึงความกล้าหาญในการรักษาพื้นที่และก้าวผ่านอุปสรรคไปได้", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e4/Wands07.jpg" },
+        { "CardName": "Eight of Wands", "Meaning": "ทุกอย่างกำลังเคลื่อนที่ไปอย่างรวดเร็ว ข่าวสารหรือโอกาสกำลังพุ่งเข้ามาหาคุณอย่างไม่ทันตั้งตัว เป็นเวลาที่ต้องรีบตัดสินใจและตอบสนองต่อเหตุการณ์ที่เกิดขึ้นโดยพลัน", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Wands08.jpg/500px-Wands08.jpg" },
+        { "CardName": "Nine of Wands", "Meaning": "ความอดทนและการยืนหยัดสู้ต่อแม้จะเผชิญกับภาระที่หนักหน่วง คุณกำลังใกล้จะถึงเส้นชัยแล้ว แม้จะเหนื่อยล้าแต่ความมุ่งมั่นจะทำให้คุณผ่านพ้นวิกฤตนี้ไปได้", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Wands09.jpg/500px-Wands09.jpg" },
+        { "CardName": "Ten of Wands", "Meaning": "ภาระและความรับผิดชอบที่หนักอึ้งเกินกำลัง การแบกรับทุกอย่างไว้เพียงผู้เดียวอาจทำให้คุณหมดไฟ ให้ลองวางแผนจัดการและขอความช่วยเหลือบ้างเพื่อให้งานก้าวหน้าต่อไปได้", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Wands10.jpg/500px-Wands10.jpg" },
+        { "CardName": "Page of Wands", "Meaning": "การค้นพบไอเดียใหม่ๆ และความกระตือรือร้นในการเริ่มต้นสิ่งใหม่ เป็นวัยแห่งการเรียนรู้และการออกไปแสวงหาประสบการณ์ชีวิตด้วยความกล้า", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Wands11.jpg/500px-Wands11.jpg" },
+        { "CardName": "Knight of Wands", "Meaning": "ความรวดเร็วและแรงผลักดันในการลงมือทำ สิ่งที่คุณตั้งใจไว้จะสำเร็จได้อย่างรวดเร็วหากคุณใส่พลังงานและความทุ่มเทลงไปอย่างเต็มที่", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Wands12.jpg/500px-Wands12.jpg" },
+        { "CardName": "Queen of Wands", "Meaning": "ความมั่นใจในตนเองและความร่าเริงมีเสน่ห์ เป็นตัวแทนของคนที่พร้อมจะนำทางและสร้างแรงบันดาลใจให้ผู้อื่นด้วยวิสัยทัศน์ที่สดใส", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Wands13.jpg/500px-Wands13.jpg" },
+        { "CardName": "King of Wands", "Meaning": "วิสัยทัศน์และการเป็นผู้นำที่กล้าหาญ คุณมีความสามารถในการจัดการทุกอย่างให้เป็นไปตามเป้าหมายด้วยความมุ่งมั่นและพลังแห่งความคิดสร้างสรรค์", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Wands14.jpg/500px-Wands14.jpg" },
+        { "CardName": "Ace of Cups", "Meaning": "การเริ่มต้นใหม่ในเรื่องของความรักและความรู้สึกดีๆ พลังแห่งความเมตตาและหัวใจที่เปิดกว้างกำลังนำพาโอกาสในการเริ่มต้นความสัมพันธ์หรือแรงบันดาลใจใหม่ๆ", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/3/36/Cups01.jpg" },
+        { "CardName": "Two of Cups", "Meaning": "ความเป็นหุ้นส่วนและความเข้าใจที่ลึกซึ้ง ไม่ว่าจะเป็นเรื่องความรักหรือการทำงาน คุณจะได้รับความร่วมมือที่ดีและมีความสัมพันธ์ที่สมดุลร่วมกัน", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f8/Cups02.jpg" },
+        { "CardName": "Three of Cups", "Meaning": "การสังสรรค์ มิตรภาพ และความสุขที่ได้อยู่ร่วมกับกลุ่มคนที่มีเป้าหมายเดียวกัน เป็นช่วงเวลาแห่งการเฉลิมฉลองความสำเร็จและแบ่งปันความสุข", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7a/Cups03.jpg" },
+        { "CardName": "Four of Cups", "Meaning": "ความรู้สึกเบื่อหน่ายหรือการเพิกเฉยต่อโอกาสที่เข้ามา ให้ลองสังเกตสิ่งดีๆ รอบตัวที่อาจถูกมองข้ามไป การเปิดใจรับสิ่งใหม่จะช่วยแก้ความหม่นหมองนี้ได้", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/3/35/Cups04.jpg" },
+        { "CardName": "Five of Cups", "Meaning": "ความผิดหวังและการเสียใจกับสิ่งที่ผ่านพ้นไป เป็นการเตือนให้คุณหันมามองสิ่งที่ยังเหลืออยู่ แทนที่จะยึดติดกับความสูญเสีย เพื่อเริ่มต้นก้าวใหม่ที่ดีกว่าเดิม", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d7/Cups05.jpg" },
+        { "CardName": "Six of Cups", "Meaning": "ความทรงจำในอดีตที่หวนคืนมาพร้อมความอ่อนโยน การกลับไปเชื่อมต่อกับสิ่งที่คุ้นเคยจะช่วยเติมเต็มกำลังใจและสร้างความสุขในปัจจุบัน", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/1/17/Cups06.jpg" },
+        { "CardName": "Seven of Cups", "Meaning": "ตัวเลือกที่หลากหลายและความฝันที่สวยงามแต่ยังจับต้องไม่ได้ ควรมีสติในการเลือกและโฟกัสในสิ่งที่สามารถทำให้เป็นจริงได้ มากกว่าปล่อยให้จิตใจเลื่อนลอย", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Cups07.jpg/500px-Cups07.jpg" },
+        { "CardName": "Eight of Cups", "Meaning": "การตัดสินใจที่จะทิ้งสิ่งเดิมและก้าวออกไปตามหาความหมายใหม่ๆ แม้จะรู้สึกเสียดายแต่เป็นการเดินหน้าเพื่อพัฒนาตนเองสู่สิ่งที่ดีกว่า", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Cups08.jpg/500px-Cups08.jpg" },
+        { "CardName": "Nine of Cups", "Meaning": "ความพึงพอใจและความสุขสมหวังในทุกด้านที่คุณปรารถนา เป็นช่วงเวลาที่ดีเยี่ยมในการเฉลิมฉลองและเพลิดเพลินกับผลลัพธ์ที่คุณได้รับ", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Cups09.jpg/500px-Cups09.jpg" },
+        { "CardName": "Ten of Cups", "Meaning": "ความสุขสมบูรณ์ในครอบครัวและความสัมพันธ์ที่ยืนยาว การสนับสนุนจากคนรอบข้างจะช่วยให้คุณรู้สึกเติมเต็มและมั่นคงทั้งทางกายและใจ", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/84/Cups10.jpg" },
+        { "CardName": "Page of Cups", "Meaning": "ข่าวสารที่นำพาความรู้สึกดีๆ และความคิดสร้างสรรค์มาให้ คุณอาจได้พบกับโอกาสใหม่ๆ ที่เกี่ยวพันกับอารมณ์หรือศิลปะ", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/a/ad/Cups11.jpg" },
+        { "CardName": "Knight of Cups", "Meaning": "ความโรแมนติกและการเสนอความรักหรือโอกาสที่น่ารื่นรมย์ คุณอาจได้รับการติดต่อหรือข้อเสนอที่ทำให้ใจเต้นแรง", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Cups12.jpg" },
+        { "CardName": "Queen of Cups", "Meaning": "ความเห็นอกเห็นใจและความเข้าใจอย่างลึกซึ้ง คุณมีจิตใจที่อ่อนโยนและมั่นคง พร้อมที่จะเป็นที่พึ่งพาทางอารมณ์ให้ผู้อื่น", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Cups13.jpg/500px-Cups13.jpg" },
+        { "CardName": "King of Cups", "Meaning": "การควบคุมอารมณ์ด้วยเหตุผลและความใจเย็น คุณสามารถจัดการกับสถานการณ์ที่อ่อนไหวได้ด้วยความเฉลียวฉลาดและมีความเมตตา", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/04/Cups14.jpg" },
+        { "CardName": "Ace of Swords", "Meaning": "ความชัดเจนทางความคิดและการตัดสินใจที่เฉียบขาด คุณจะได้พบคำตอบที่มองหาและเริ่มกระบวนการแก้ไขปัญหาได้อย่างตรงจุด", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/1/1a/Swords01.jpg" },
+        { "CardName": "Two of Swords", "Meaning": "ทางเลือกที่ยากลำบากและการปิดกั้นตนเองจากการตัดสินใจ คุณกำลังเผชิญกับสถานการณ์ที่ต้องชั่งน้ำหนักให้ดีก่อนเลือกทางเดิน", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Swords02.jpg" },
+        { "CardName": "Three of Swords", "Meaning": "ความเจ็บปวดทางใจและความเสียใจจากคำพูดหรือการกระทำ เป็นบททดสอบที่สำคัญในการยอมรับความจริงและเยียวยาแผลใจเพื่อความเข้มแข็ง", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/02/Swords03.jpg" },
+        { "CardName": "Four of Swords", "Meaning": "เวลาแห่งการหยุดพักและพักฟื้นร่างกายหรือจิตใจ การหลีกหนีจากความวุ่นวายจะช่วยให้คุณได้รวบรวมพลังเพื่อกลับมาสู้ใหม่", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Swords04.jpg/500px-Swords04.jpg" },
+        { "CardName": "Five of Swords", "Meaning": "ความขัดแย้งที่อาจนำไปสู่ความพ่ายแพ้หรือการสูญเสีย อย่าดึงดันทำในสิ่งที่ทำร้ายผู้อื่น เพราะชัยชนะที่ได้มาอาจไม่คุ้มกับสิ่งที่เสียไป", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Swords05.jpg/500px-Swords05.jpg" },
+        { "CardName": "Six of Swords", "Meaning": "การก้าวข้ามช่วงเวลาที่ยากลำบากไปสู่จุดหมายที่สงบสุขกว่า เป็นการเดินทางที่แม้จะไม่เต็มไปด้วยความสุข แต่จะนำพาไปสู่หนทางที่เปิดกว้างและสดใสกว่าเดิม", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Swords06.jpg/500px-Swords06.jpg" },
+        { "CardName": "Seven of Swords", "Meaning": "การวางกลยุทธ์และการใช้ความฉลาดในการผ่านพ้นสถานการณ์ที่ซับซ้อน อาจต้องใช้ชั้นเชิงในการทำสิ่งที่จำเป็นโดยไม่ทำให้เกิดความขัดแย้งตรงๆ", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Swords07.jpg/500px-Swords07.jpg" },
+        { "CardName": "Eight of Swords", "Meaning": "ความรู้สึกเหมือนติดกับดักจากความคิดของตนเอง คุณมีความกลัวขัดขวางความก้าวหน้า จงมองหาอิสรภาพภายในใจแล้วคุณจะพบทางออก", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Swords08.jpg/500px-Swords08.jpg" },
+        { "CardName": "Nine of Swords", "Meaning": "ความวิตกกังวลและความเครียดที่กัดกินใจ ให้ตระหนักว่าเรื่องราวส่วนใหญ่เป็นเพียงภาพลวงตาที่เกิดจากความกลัว ให้หันมาโฟกัสกับความจริงที่เป็นอยู่", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Swords09.jpg/500px-Swords09.jpg" },
+        { "CardName": "Ten of Swords", "Meaning": "การสิ้นสุดที่เจ็บปวดแต่จำเป็น เพื่อให้สิ่งใหม่ได้เติบโตขึ้น แม้จะดูเหมือนการสูญเสียที่รุนแรง แต่เป็นการล้างไพ่เพื่อเริ่มใหม่ในสถานะที่เข้มแข็งกว่า", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5f/10swords.jpg" },
+        { "CardName": "Page of Swords", "Meaning": "ความอยากรู้อยากเห็นและการเฝ้าระวังสิ่งต่างๆ รอบตัว คุณมีความพร้อมที่จะเรียนรู้และสื่อสารเพื่อสร้างความเข้าใจที่ชัดเจน", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Swords11.jpg/500px-Swords11.jpg" },
+        { "CardName": "Knight of Swords", "Meaning": "การพุ่งไปข้างหน้าอย่างรวดเร็วด้วยความคิดที่เฉียบคม คุณพร้อมที่จะจัดการปัญหาหรือเริ่มทำตามเป้าหมายโดยไม่ลังเล", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b0/Swords12.jpg" },
+        { "CardName": "Queen of Swords", "Meaning": "การใช้เหตุผลและความจริงในการตัดสินใจ คุณมีความเด็ดขาดและมองทุกอย่างตามความเป็นจริง ไม่หวั่นไหวกับอารมณ์", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Swords13.jpg/500px-Swords13.jpg" },
+        { "CardName": "King of Swords", "Meaning": "การใช้สติปัญญาและตรรกะในการแก้ปัญหา คุณมีความยุติธรรมและยึดถือเหตุผลเป็นสำคัญในการนำทางสู่จุดหมาย", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/3/33/Swords14.jpg" },
+        { "CardName": "Ace of Pentacles", "Meaning": "โอกาสใหม่ๆ ด้านการเงินและความมั่งคั่งกำลังรอคุณอยู่ เป็นช่วงเวลาที่ดีในการเริ่มต้นโปรเจกต์ใหม่ที่สร้างรากฐานความสำเร็จในระยะยาว", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Pents01.jpg/500px-Pents01.jpg" },
+        { "CardName": "Two of Pentacles", "Meaning": "การจัดการความสมดุลระหว่างภาระหน้าที่หลายๆ อย่าง การปรับตัวให้เข้ากับสถานการณ์ที่เปลี่ยนแปลงตลอดเวลาเป็นกุญแจสำคัญ", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Pents02.jpg" },
+        { "CardName": "Three of Pentacles", "Meaning": "การทำงานเป็นทีมและความร่วมมือเพื่อสร้างงานที่มีคุณภาพ การยอมรับความคิดเห็นจากผู้อื่นจะทำให้คุณก้าวไปสู่ความสำเร็จที่ยิ่งใหญ่กว่า", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/4/42/Pents03.jpg" },
+        { "CardName": "Four of Pentacles", "Meaning": "ความหวงแหนและยึดติดในทรัพย์สินหรือตำแหน่งงาน ควรปล่อยวางบ้างเพื่อไม่ให้ความกลัวสูญเสียมาปิดกั้นความเจริญเติบโตของคุณ", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/3/35/Pents04.jpg" },
+        { "CardName": "Five of Pentacles", "Meaning": "ความยากลำบากหรือความขาดแคลนที่เกิดขึ้นชั่วคราว ให้มองหาความช่วยเหลือจากคนรอบข้าง เพราะคุณไม่ได้เผชิญปัญหาเพียงลำพัง", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/96/Pents05.jpg" },
+        { "CardName": "Six of Pentacles", "Meaning": "การให้และการรับอย่างสมดุล เป็นช่วงเวลาที่เอื้ออำนวยต่อการแบ่งปันน้ำใจและการสนับสนุนผู้อื่น ซึ่งจะส่งผลให้คุณได้รับความเมตตากลับคืนมาในอนาคต", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a6/Pents06.jpg" },
+        { "CardName": "Seven of Pentacles", "Meaning": "การประเมินผลและการรอคอยผลลัพธ์จากการลงมือทำอย่างอดทน ความสำเร็จในระยะยาวต้องใช้เวลาและการดูแลที่ต่อเนื่อง", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Pents07.jpg/500px-Pents07.jpg" },
+        { "CardName": "Eight of Pentacles", "Meaning": "ความมุ่งมั่นในการฝึกฝนทักษะเพื่อความเป็นเลิศ การใส่ใจในรายละเอียดเล็กๆ น้อยๆ จะช่วยให้คุณพัฒนาไปสู่ระดับมืออาชีพอย่างแท้จริง", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Pents08.jpg/500px-Pents08.jpg" },
+        { "CardName": "Nine of Pentacles", "Meaning": "ความสำเร็จส่วนบุคคลและความร่ำรวยที่มาจากความขยันของตนเอง คุณกำลังอยู่ในสถานะที่พร้อมจะเพลิดเพลินกับผลตอบแทนที่คุ้มค่า", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Pents09.jpg/500px-Pents09.jpg" },
+        { "CardName": "Ten of Pentacles", "Meaning": "ความมั่นคงของครอบครัวและทรัพย์สินที่งอกเงย เป็นความสำเร็จที่ส่งผลถึงอนาคตของคนรอบข้างและเป็นหลักประกันที่มั่นคง", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Pents10.jpg/500px-Pents10.jpg" },
+        { "CardName": "Page of Pentacles", "Meaning": "การเรียนรู้สิ่งใหม่ๆ ที่นำไปสู่โอกาสทางการเงินหรือการเติบโตของหน้าที่การงาน คุณพร้อมที่จะรับฟังและพัฒนาตนเองอย่างต่อเนื่อง", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Pents11.jpg/500px-Pents11.jpg" },
+        { "CardName": "Knight of Pentacles", "Meaning": "ความขยันและการทำงานอย่างเป็นระบบ คุณให้ความสำคัญกับความมั่นคงและผลลัพธ์ที่เป็นรูปธรรมมากกว่าความหวือหวา", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d5/Pents12.jpg" },
+        { "CardName": "Queen of Pentacles", "Meaning": "ความอุดมสมบูรณ์และความเอื้อเฟื้อเผื่อแผ่ คุณมีทุกอย่างพร้อมในการสร้างความสุขให้ตนเองและผู้ที่อยู่รอบข้างด้วยความอบอุ่น", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/88/Pents13.jpg" },
+        { "CardName": "King of Pentacles", "Meaning": "ความสำเร็จทางธุรกิจและความมั่นคงในฐานะผู้นำ คุณมีความสามารถในการจัดการทรัพย์สินและนำทางไปสู่ความร่ำรวยอย่างยั่งยืน", "ImageUrl": "https://upload.wikimedia.org/wikipedia/commons/1/1c/Pents14.jpg" }
+      ];
+
+      let allCards = [];
+      let shuffledDeck = [];
+      let pickedCards = [];
+      const positions = ["สถานการณ์", "อุปสรรค", "คำแนะนำ", "สรุป"];
+
+      window.onload = () => {
+        allCards = tarotData;
+      };
+
+      function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+      }
+
+      function startShuffling() {
+        const deck = document.getElementById("main-deck");
+        deck.classList.add("shuffling");
+        document.getElementById("status-text").innerText = "กำลังสับไพ่...";
+
+        setTimeout(() => {
+          deck.classList.remove("shuffling");
+          deck.style.display = "none";
+          shuffledDeck = shuffle([...allCards]);
+          renderSpread();
+        }, 2000);
+      }
+
+      function renderSpread() {
+        const container = document.getElementById("deck-container");
+        container.className =
+          "flex flex-wrap justify-center p-2 max-w-lg mx-auto overflow-x-auto";
+        document.getElementById("status-text").innerText =
+          "เลือกไพ่ 4 ใบจากสำรับที่สับแล้ว";
+
+        shuffledDeck.forEach((card, index) => {
+          const div = document.createElement("div");
+          div.className = "card-item shadow-sm";
+          div.innerHTML = "✨";
+          div.onclick = () => selectCard(div, index);
+          container.appendChild(div);
+        });
+      }
+
+      function selectCard(element, index) {
+        if (pickedCards.length >= 4) return;
+        if (element.classList.contains("selected")) return;
+
+        element.classList.add("selected");
+        element.style.visibility = "hidden";
+
+        const card = shuffledDeck[index];
+        pickedCards.push(card);
+
+        const slot = document.getElementById(`slot-${pickedCards.length - 1}`);
+        slot.innerHTML = `<img src="${card.ImageUrl}" class="w-full h-full rounded-xl object-cover">`;
+
+        if (pickedCards.length === 4) {
+          showPredictButton();
+        }
+      }
+
+      function showPredictButton() {
+        document.getElementById("status-text").innerText = "เลือกครบแล้ว!";
+        const actionArea = document.getElementById("action-area");
+        actionArea.innerHTML = `
+            <button onclick="showReading()" class="px-8 py-3 bg-pink-500 text-white rounded-full shadow-lg font-bold hover:bg-pink-600 transition animate-bounce">
+                เริ่มทำนาย
+            </button>
+        `;
+      }
+
+      function showReading() {
+        const resultArea = document.getElementById("result-area");
+        resultArea.classList.remove("hidden");
+        document.getElementById("deck-container").classList.add("hidden");
+        document.getElementById("spread-area").classList.add("hidden");
+        document.getElementById("action-area").classList.add("hidden");
+        document.getElementById("status-text").innerText = "คำทำนายของคุณ";
+
+        let html = '<div class="space-y-6">';
+        pickedCards.forEach((card, i) => {
+          html += `
+          <div class="flex gap-4 items-start bg-pink-50 p-4 rounded-2xl animate-in fade-in zoom-in duration-500">
+            <img src="${card.ImageUrl}" class="w-24 h-36 rounded-lg shadow-md object-cover">
+            <div>
+              <h3 class="font-bold text-pink-600">${positions[i]}: ${card.CardName}</h3>
+              <p class="text-sm text-gray-600 mt-1">${card.Meaning}</p>
+            </div>
+          </div>
+        `;
+        });
+        html += `<button onclick="location.reload()" class="w-full py-3 bg-pink-400 text-white rounded-xl mt-4">เริ่มดูใหม่</button></div>`;
+        resultArea.innerHTML = html;
+      }
+    </script>
+  </body>
+</html>
